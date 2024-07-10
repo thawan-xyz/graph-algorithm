@@ -1,6 +1,6 @@
 #include <bits/stdc++.h>
 #define array vector
-#define map unordered_map
+#define umap unordered_map
 using namespace std;
 
 // @author: Thawan Ribeiro, 2024-03-14
@@ -10,59 +10,34 @@ using namespace std;
 class Graph {
 private:
     const int VERTICES; int edges;
-    array<map<int, int>> adjacency; array<bool> marked;
+    array<umap<int, int>> adjacency; array<bool> marked;
 
-    int get_first_adjacent(int v) const {
-        for (int w = 0; w < VERTICES; ++w) {
-            if (has_edge(v, w)) return w;
-        }
-        return VERTICES;
+    bool is_marked(int x) const {
+        return marked[x];
     }
 
-    int get_next_adjacent(int v, int p) const {
-        for (int w = p + 1; w < VERTICES; ++w) {
-            if (has_edge(v, w)) return w;
-        }
-        return VERTICES;
+    void set_mark(int x, bool m = true) {
+        marked[x] = m;
     }
 
-    int get_last_adjacent(int v) const {
-        for (int w = VERTICES - 1; w >= 0; --w) {
-            if (has_edge(v, w)) return w;
-        }
-        return VERTICES;
-    }
+    void depth_first_search(int x, array<int>& result) {
+        result.push_back(x); set_mark(x);
 
-    bool is_marked(int v) const {
-        return marked[v];
-    }
-
-    void set_mark(int v, bool b = true) {
-        marked[v] = b;
-    }
-
-    void depth_first_search(int v, array<int>& result) {
-        result.push_back(v); set_mark(v);
-
-        int w = get_first_adjacent(v);
-        while (w < VERTICES) {
-            if (!is_marked(w)) depth_first_search(w, result);
-            w = get_next_adjacent(v, w);
+        for (auto [y, w] : adjacency[x]) {
+            if (!is_marked(y)) depth_first_search(y, result);
         }
     }
 
-    void breadth_first_search(int v, array<int>& result) {
-        queue<int> trail; trail.push(v); set_mark(v);
+    void breadth_first_search(int x, array<int>& result) {
+        queue<int> trail; trail.push(x); set_mark(x);
 
         while (!trail.empty()) {
-            v = trail.front(); trail.pop(); result.push_back(v);
+            x = trail.front(); trail.pop(); result.push_back(x);
 
-            int w = get_first_adjacent(v);
-            while (w < VERTICES) {
-                if (!is_marked(w)) {
-                    trail.push(w); set_mark(w);
+            for (auto [y, w] : adjacency[x]) {
+                if (!is_marked(y)) {
+                    trail.push(y); set_mark(y);
                 }
-                w = get_next_adjacent(v, w);
             }
         }
     }
@@ -72,26 +47,26 @@ public:
 
     ~Graph() = default;
 
-    bool has_edge(int v, int w) const {
-        return adjacency[v].count(w);
+    bool has_edge(int x, int y) const {
+        return adjacency[x].count(y);
     }
 
-    void set_edge(int v, int w, int x = 1) {
-        if (!has_edge(v, w)) edges++;
+    void set_edge(int x, int y, int w = 1) {
+        if (!has_edge(x, y)) edges++;
 
-        adjacency[v][w] = x;
+        adjacency[x][y] = w;
     }
 
-    void del_edge(int v, int w) {
-        if (has_edge(v, w)) edges--;
+    void del_edge(int x, int y) {
+        if (has_edge(x, y)) edges--;
 
-        adjacency[v].erase(w);
+        adjacency[x].erase(y);
     }
 
-    int get_weight(int v, int w) const {
-        if (!has_edge(v, w)) return 0;
+    int get_weight(int x, int y) const {
+        if (!has_edge(x, y)) return 0;
 
-        return adjacency[v].at(w);
+        return adjacency[x].at(y);
     }
 
     int num_vertices() const {
@@ -104,17 +79,21 @@ public:
 
     array<int> dfs_traversal() {
         array<int> result; marked.assign(VERTICES, false);
-        for (int v = 0; v < VERTICES; ++v) {
-            if (!is_marked(v)) depth_first_search(v, result);
+
+        for (int x = 0; x < VERTICES; ++x) {
+            if (!is_marked(x)) depth_first_search(x, result);
         }
+
         return result;
     }
 
     array<int> bfs_traversal() {
         array<int> result; marked.assign(VERTICES, false);
-        for (int v = 0; v < VERTICES; ++v) {
-            if (!is_marked(v)) breadth_first_search(v, result);
+
+        for (int x = 0; x < VERTICES; ++x) {
+            if (!is_marked(x)) breadth_first_search(x, result);
         }
+
         return result;
     }
 };
